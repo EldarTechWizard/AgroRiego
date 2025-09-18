@@ -1,0 +1,27 @@
+export const crops = [
+  { name: "Maíz", value: "maiz", emoji: "🌽", Kc: { inicial: 0.3, desarrollo: 0.7, media: 1.2, final: 0.6 }, rootDepth: { min: 0.6, max: 1.2 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Tomate", value: "tomate", emoji: "🍅", Kc: { inicial: 0.6, desarrollo: 1.15, media: 1.15, final: 0.8 }, rootDepth: { min: 0.3, max: 0.5 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Frijol", value: "frijol", emoji: "🫘", Kc: { inicial: 0.4, desarrollo: 0.7, media: 1.15, final: 0.35 }, rootDepth: { min: 0.3, max: 0.5 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Trigo", value: "trigo", emoji: "🌾", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.15, final: 0.25 }, rootDepth: { min: 0.6, max: 0.8 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Arroz", value: "arroz", emoji: "🍚", Kc: { inicial: 1.1, desarrollo: 1.05, media: 1.2, final: 0.9 }, rootDepth: { min: 0.2, max: 0.3 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Papa", value: "papa", emoji: "🥔", Kc: { inicial: 0.5, desarrollo: 0.75, media: 1.15, final: 0.75 }, rootDepth: { min: 0.3, max: 0.5 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Alfalfa", value: "alfalfa", emoji: "🌿", Kc: { inicial: 0.4, desarrollo: 0.85, media: 1.2, final: 0.9 }, rootDepth: { min: 1.5, max: 2.5 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Sorgo", value: "sorgo", emoji: "🌾", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.15, final: 0.55 }, rootDepth: { min: 0.8, max: 1.5 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Cebada", value: "cebada", emoji: "🌾", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.1, final: 0.25 }, rootDepth: { min: 0.5, max: 0.8 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Algodón", value: "algodon", emoji: "🌱", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.15, final: 0.65 }, rootDepth: { min: 0.8, max: 1.5 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Lechuga", value: "lechuga", emoji: "🥬", Kc: { inicial: 0.7, desarrollo: 0.95, media: 1.05, final: 0.95 }, rootDepth: { min: 0.15, max: 0.4 }, p: { min: 0.3, max: 0.5 } },
+  { name: "Zanahoria", value: "zanahoria", emoji: "🥕", Kc: { inicial: 0.7, desarrollo: 0.95, media: 1.05, final: 0.95 }, rootDepth: { min: 0.3, max: 0.6 }, p: { min: 0.3, max: 0.5 } },
+  { name: "Uva", value: "uva", emoji: "🍇", Kc: { inicial: 0.3, desarrollo: 0.6, media: 0.9, final: 0.6 }, rootDepth: { min: 0.8, max: 1.5 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Cítricos", value: "citricos", emoji: "🍊", Kc: { inicial: 0.6, desarrollo: 0.75, media: 0.95, final: 0.7 }, rootDepth: { min: 0.8, max: 1.5 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Plátano", value: "platano", emoji: "🍌", Kc: { inicial: 0.5, desarrollo: 0.95, media: 1.1, final: 1.0 }, rootDepth: { min: 0.8, max: 1.5 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Chile", value: "chile", emoji: "🌶️", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.05, final: 0.65 }, rootDepth: { min: 0.4, max: 0.7 }, p: { min: 0.3, max: 0.5 } },
+  { name: "Pepino", value: "pepino", emoji: "🥒", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.05, final: 0.65 }, rootDepth: { min: 0.3, max: 0.6 }, p: { min: 0.3, max: 0.5 } },
+  { name: "Calabacita", value: "calabacita", emoji: "🥒", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.05, final: 0.65 }, rootDepth: { min: 0.3, max: 0.6 }, p: { min: 0.3, max: 0.5 } },
+  { name: "Sandía", value: "sandia", emoji: "🍉", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.05, final: 0.65 }, rootDepth: { min: 0.5, max: 1.0 }, p: { min: 0.3, max: 0.5 } },
+  { name: "Melón", value: "melon", emoji: "🍈", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.05, final: 0.65 }, rootDepth: { min: 0.5, max: 1.0 }, p: { min: 0.3, max: 0.5 } },
+  { name: "Garbanzo", value: "garbanzo", emoji: "🫘", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.05, final: 0.65 }, rootDepth: { min: 0.6, max: 1.2 }, p: { min: 0.3, max: 0.5 } },
+  { name: "Mango", value: "mango", emoji: "🥭", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.05, final: 0.65 }, rootDepth: { min: 1.0, max: 2.5 }, p: { min: 0.3, max: 0.5 } },
+  { name: "Jitomate", value: "jitomate", emoji: "🍅", Kc: { inicial: 0.6, desarrollo: 1.15, media: 1.15, final: 0.8 }, rootDepth: { min: 0.3, max: 0.5 }, p: { min: 0.4, max: 0.6 } },
+  { name: "Ajonjolí", value: "ajonjoli", emoji: "🌱", Kc: { inicial: 0.35, desarrollo: 0.75, media: 1.05, final: 0.65 }, rootDepth: { min: 0.5, max: 0.9 }, p: { min: 0.3, max: 0.5 } }
+];
+
