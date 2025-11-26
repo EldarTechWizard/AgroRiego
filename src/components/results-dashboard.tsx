@@ -8,12 +8,9 @@ import {
   Calendar,
   TrendingUp,
   Clock,
-  Download,
   RotateCcw,
   Sprout,
   Gauge,
-  BarChart3,
-  Settings,
   Home,
 } from "lucide-react"
 
@@ -36,13 +33,20 @@ interface ResultsDashboardProps {
   data: ResultsData
 }
 
+
+
 export function ResultsDashboard({ data }: Readonly<ResultsDashboardProps>) {
   // Datos simulados para los próximos 7 días
-
+  const parseProx = (fechaReferencia: string) => {
+    return new Date(fechaReferencia).toLocaleDateString("es-MX", {
+      day: "numeric",
+      month: "short",
+    });
+  }
 
   const handleNewCalculation = () => {
     console.log("[v0] Iniciando nuevo cálculo")
-    window.location.href = "/"
+    globalThis.location.href = "/"
   }
 
   const handleExportPDF = () => {
@@ -76,7 +80,7 @@ export function ResultsDashboard({ data }: Readonly<ResultsDashboardProps>) {
                     {data.etapaCultivo}
                   </Badge>
                   <Button
-                    onClick={() => (window.location.href = "/")}
+                    onClick={() => (globalThis.location.href = "/")}
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-2"
@@ -153,14 +157,14 @@ export function ResultsDashboard({ data }: Readonly<ResultsDashboardProps>) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-lg font-bold text-foreground mb-1">{data.proximoRiego}</div>
+              <div className="text-lg font-bold text-foreground mb-1">{parseProx(data.proximoRiego)}</div>
               <p className="text-sm text-muted-foreground">Fecha programada</p>
             </CardContent>
           </Card>
         </div>
 
         <div className="max-w-2xl mx-auto mb-8">
-          
+
           {/* Tabla con detalles técnicos */}
           <Card className="shadow-lg">
             <CardHeader>

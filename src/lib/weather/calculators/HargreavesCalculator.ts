@@ -1,5 +1,5 @@
 import { IEToCalculator } from "../interfaces/IEToCalculator";
-import { WeatherData } from "../types/";
+import { WeatherData } from "../types";
 
 export class HargreavesCalculator implements IEToCalculator {
   calculateETo(data: WeatherData): number {

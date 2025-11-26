@@ -5,11 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Cloud, Edit3, MapPin, Satellite, ArrowLeft, Calculator, Key, Settings } from "lucide-react"
+import { Cloud, Edit3, ArrowLeft, Calculator, Key, Settings } from "lucide-react"
 import { ChangeEvent, useState } from "react"
-import { EToServiceFactory } from "@/weather/services/EtoServiceFactory"
-import { ManualWeatherInput } from "@/weather/providers/ManualDataProviders"
-import { Provider } from "@/weather/config/weatherConfig"
+import { ManualWeatherInput } from "@/lib/weather/providers/ManualDataProviders"
+import { useEt0Calculator } from "@/hooks/use-et0-calculator-service"
 
 type WeatherSource = "visual-crossing" | "weather-api" | "openweathermap" | "manual"
 
@@ -31,7 +30,7 @@ export default function WeatherForm({
     handleBack,
     handleSubmit,
 }: Props) {
-
+    const { fetchETo } = useEt0Calculator()
     const [weatherSource, setWeatherSource] = useState<WeatherSource>("visual-crossing")
     const [location, setLocation] = useState<Location>({ latitude: 0, longitude: 0 })
     const [locationInput, setLocationInput] = useState<Record<keyof Location, string>>({ latitude: "", longitude: "" })
@@ -90,7 +89,7 @@ export default function WeatherForm({
 
         // Convierte a número o 0 si está vacío
         const numeric = value === "" ? 0 : Number(value);
-        if (!isNaN(numeric)) {
+        if (!Number.isNaN(numeric)) {
             setManualData(prev => ({
                 ...prev,
                 [field]: numeric,
@@ -110,7 +109,7 @@ export default function WeatherForm({
 
         // Convierte a número o 0 si está vacío
         const numeric = value === "" ? 0 : Number(value);
-        if (!isNaN(numeric)) {
+        if (!Number.isNaN(numeric)) {
             setLocation(prev => ({
                 ...prev,
                 [field]: numeric,
@@ -122,55 +121,24 @@ export default function WeatherForm({
     const handlePreSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        let service;
-        let config = {
-            primaryProvider: "openweathermap" as Provider,
-            apiKeys: {
-                openWeatherMap: apiKeys.openWeatherMap,
-                visualCrossing: apiKeys.visualCrossing,
-                weatherAPI: apiKeys.weatherAPI,
-            },
-            retryAttempts: 5,
-            timeoutMs: 2000,
-            defaultCalculator: "penman-monteith" as const
-        };
+        try {
+            const result = await fetchETo({
+                weatherSource,
+                apiKeys,
+                location,
+                manualData: weatherSource === "manual" ? manualData : undefined
+            })
 
-        switch (weatherSource) {
-            case "openweathermap":
-                config = {
-                    ...config,
-                    primaryProvider: "openweathermap" as const,
+            console.log('ETo obtenido:', result)
 
-                };
-                service = EToServiceFactory.create(config);
-                break;
-            case "visual-crossing":
-                config = {
-                    ...config,
-                    primaryProvider: "visual-crossing" as const,
+            setEt0(result.eto);
 
-                };
-                service = EToServiceFactory.create(config);
-                break;
-            case "weather-api":
-                config = {
-                    ...config,
-                    primaryProvider: "weather-api" as const,
-                };
-                service = EToServiceFactory.create(config);
-                break;
-            case "manual":
-                service = EToServiceFactory.createWithManualData(manualData, location.latitude, location.longitude, "penman-monteith")
-                break;
+            handleSubmit(e);
+        } catch (err) {
+            console.error('Error:', err)
         }
 
-        const result = await service.getETo(location.latitude, location.longitude, new Date());
 
-        setEt0(result.eto);
-
-        console.log(result);
-
-        handleSubmit(e);
     }
 
 

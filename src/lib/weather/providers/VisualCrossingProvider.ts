@@ -1,8 +1,8 @@
 import { IWeatherProvider } from "../interfaces/IWeatherProvider";
-import { WeatherData } from "../types/";
+import { WeatherData } from "../types";
 
 export class VisualCrossingProvider implements IWeatherProvider {
-  constructor(private apiKey: string) {
+  constructor(readonly apiKey: string) {
     if (!apiKey) {
       throw new Error("Visual Crossing API key is required");
     }

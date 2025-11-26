@@ -25,7 +25,7 @@ export function CalculatorCard() {
       console.log("Navegando al step 2 con datos:", { cultivo: selectedCrop, fecha: sowingDate })
 
       try {
-        await router.push("/step2")
+        router.push("/step2")
       } catch (error) {
         console.error("Error en navegación:", error)
         setIsNavigating(false) // Resetear en caso de error

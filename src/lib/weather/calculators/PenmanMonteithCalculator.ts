@@ -1,5 +1,5 @@
 import { IEToCalculator } from "../interfaces/IEToCalculator";
-import { WeatherData } from "../types/";
+import { WeatherData } from "../types";
 
 export class PenmanMonteithCalculator implements IEToCalculator {
   calculateETo(data: WeatherData): number {
@@ -11,7 +11,6 @@ export class PenmanMonteithCalculator implements IEToCalculator {
       location,
     } = data;
     const Tmean = (Tmax + Tmin) / 2;
-
 
     // Validaciones
     if (Tmax < Tmin) {

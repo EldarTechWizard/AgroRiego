@@ -1,5 +1,5 @@
 import { IWeatherProvider } from "../interfaces/IWeatherProvider";
-import { WeatherData } from "../types/";
+import { WeatherData } from "../types";
 
 export class OpenWeatherMapProvider implements IWeatherProvider {
   constructor(private apiKey: string) {

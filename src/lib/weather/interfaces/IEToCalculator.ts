@@ -1,4 +1,4 @@
-import { WeatherData } from '../types/';
+import { WeatherData } from "../types";
 
 export interface IEToCalculator {
   calculateETo(weatherData: WeatherData): number;

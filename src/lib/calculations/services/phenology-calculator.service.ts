@@ -1,27 +1,6 @@
-import { Crop, PhenologyResult, StageName } from "@/types/farm";
+import { CropKc, PhenologyResult, StageBounds, StageInfo, StageName } from "@/lib/calculations/types";
 import { STAGE_DURATIONS } from "@/constants";
-
-// Tipos internos para mejor tipado
-interface StageInfo {
-  stage: StageName;
-  dayOfStage: number;
-  kcActual: number;
-}
-
-interface StageBounds {
-  inicial: { start: number; end: number };
-  desarrollo: { start: number; end: number };
-  media: { start: number; end: number };
-  final: { start: number; end: number } | null;
-}
-
-interface CropKc {
-  inicial: number;
-  media: number;
-  final: number;
-  desarrollo?: number;
-}
-
+import { Crop } from "@/types/farm";
 
 
 
@@ -56,11 +35,19 @@ function daysBetween(startDate: Date, endDate: Date): number {
  */
 function parseDateLocal(dateStr: string): Date {
   const [year, month, day] = dateStr.split("-").map(Number);
-  
-  if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31) {
+
+  if (
+    !year ||
+    !month ||
+    !day ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31
+  ) {
     throw new Error(`Fecha inválida: ${dateStr}`);
   }
-  
+
   return new Date(year, month - 1, day); // mes base 0
 }
 
@@ -71,11 +58,11 @@ function normalizeDate(date: Date | string): Date {
   if (typeof date === "string") {
     return parseDateLocal(date);
   }
-  
-  if (!(date instanceof Date) || isNaN(date.getTime())) {
-    throw new Error("Fecha inválida proporcionada");
+
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    throw new TypeError("Fecha inválida proporcionada");
   }
-  
+
   return date;
 }
 
@@ -88,7 +75,7 @@ function computeKcForStage(
   dayOfStage: number,
   stageLength: number
 ): number {
-  if (!cropKc) return NaN;
+  if (!cropKc) return Number.NaN;
 
   const { inicial, media, final } = cropKc;
 
@@ -97,17 +84,23 @@ function computeKcForStage(
       return inicial;
 
     case "Desarrollo":
-      if (stageLength <= 1) return media;
-      const developmentRatio = Math.max(0, Math.min(1, (dayOfStage - 1) / (stageLength - 1)));
-      return inicial + developmentRatio * (media - inicial);
+      { if (stageLength <= 1) return media;
+      const developmentRatio = Math.max(
+        0,
+        Math.min(1, (dayOfStage - 1) / (stageLength - 1))
+      );
+      return inicial + developmentRatio * (media - inicial); }
 
     case "Media":
       return media;
 
     case "Final":
-      if (stageLength <= 1) return final ?? media;
-      const finalRatio = Math.max(0, Math.min(1, (dayOfStage - 1) / (stageLength - 1)));
-      return media + finalRatio * ((final ?? media) - media);
+      { if (stageLength <= 1) return final ?? media;
+      const finalRatio = Math.max(
+        0,
+        Math.min(1, (dayOfStage - 1) / (stageLength - 1))
+      );
+      return media + finalRatio * ((final ?? media) - media); }
 
     case "Perenne":
     case "Post-cosecha":
@@ -128,9 +121,8 @@ function calculateStageBounds(
   const inicial = { start: 0, end: Lini };
   const desarrollo = { start: inicial.end, end: inicial.end + Ldev };
   const media = { start: desarrollo.end, end: desarrollo.end + Lmid };
-  const final = Lfin !== null 
-    ? { start: media.end, end: media.end + Lfin }
-    : null;
+  const final =
+    Lfin === null ? null : { start: media.end, end: media.end + Lfin };
 
   return { inicial, desarrollo, media, final };
 }
@@ -142,7 +134,12 @@ function determineCurrentStage(
   daysSinceSow: number,
   bounds: StageBounds,
   selectedCropObject: Crop,
-  stageLengths: { Lini: number; Ldev: number; Lmid: number; Lfin: number | null }
+  stageLengths: {
+    Lini: number;
+    Ldev: number;
+    Lmid: number;
+    Lfin: number | null;
+  }
 ): StageInfo {
   const { Lini, Ldev, Lmid, Lfin } = stageLengths;
 
@@ -151,7 +148,12 @@ function determineCurrentStage(
     return {
       stage: "Inicial",
       dayOfStage: daysSinceSow + 1,
-      kcActual: computeKcForStage(selectedCropObject.Kc, "Inicial", daysSinceSow + 1, Lini)
+      kcActual: computeKcForStage(
+        selectedCropObject.Kc,
+        "Inicial",
+        daysSinceSow + 1,
+        Lini
+      ),
     };
   }
 
@@ -161,7 +163,12 @@ function determineCurrentStage(
     return {
       stage: "Desarrollo",
       dayOfStage,
-      kcActual: computeKcForStage(selectedCropObject.Kc, "Desarrollo", dayOfStage, Ldev)
+      kcActual: computeKcForStage(
+        selectedCropObject.Kc,
+        "Desarrollo",
+        dayOfStage,
+        Ldev
+      ),
     };
   }
 
@@ -171,7 +178,12 @@ function determineCurrentStage(
     return {
       stage: "Media",
       dayOfStage,
-      kcActual: computeKcForStage(selectedCropObject.Kc, "Media", dayOfStage, Lmid)
+      kcActual: computeKcForStage(
+        selectedCropObject.Kc,
+        "Media",
+        dayOfStage,
+        Lmid
+      ),
     };
   }
 
@@ -181,7 +193,12 @@ function determineCurrentStage(
     return {
       stage: "Final",
       dayOfStage,
-      kcActual: computeKcForStage(selectedCropObject.Kc, "Final", dayOfStage, Lfin!)
+      kcActual: computeKcForStage(
+        selectedCropObject.Kc,
+        "Final",
+        dayOfStage,
+        Lfin!
+      ),
     };
   }
 
@@ -191,7 +208,12 @@ function determineCurrentStage(
     return {
       stage: "Perenne",
       dayOfStage,
-      kcActual: computeKcForStage(selectedCropObject.Kc, "Media", dayOfStage, Lmid)
+      kcActual: computeKcForStage(
+        selectedCropObject.Kc,
+        "Media",
+        dayOfStage,
+        Lmid
+      ),
     };
   }
 
@@ -200,7 +222,7 @@ function determineCurrentStage(
   return {
     stage: "Post-cosecha",
     dayOfStage,
-    kcActual: computeKcForStage(selectedCropObject.Kc, "Final", Lfin!, Lfin!)
+    kcActual: computeKcForStage(selectedCropObject.Kc, "Final", Lfin!, Lfin!),
   };
 }
 
@@ -232,10 +254,12 @@ function calculateStageStartDates(sowingDate: Date, bounds: StageBounds) {
  */
 function getStageDurations(cropValue?: string) {
   if (!cropValue || !STAGE_DURATIONS[cropValue]) {
-    console.warn(`No se encontraron duraciones para el cultivo: ${cropValue}. Usando valores por defecto.`);
+    console.warn(
+      `No se encontraron duraciones para el cultivo: ${cropValue}. Usando valores por defecto.`
+    );
     return FALLBACK_DURATIONS;
   }
-  
+
   return STAGE_DURATIONS[cropValue];
 }
 
@@ -243,19 +267,19 @@ function getStageDurations(cropValue?: string) {
  * Retorna un resultado por defecto cuando no hay cultivo seleccionado o fecha inválida
  */
 function getDefaultResult(
-  cropValue?: string, 
-  sowingDate?: Date, 
+  cropValue?: string,
+  sowingDate?: Date,
   daysSinceSowing = 0,
   cropObject?: Crop | null
 ): PhenologyResult {
   const defaultDate = sowingDate || new Date();
-  
+
   // Para fechas pre-siembra, usar Kc inicial si está disponible
-  let kcDefault = NaN;
+  let kcDefault = Number.NaN;
   if (daysSinceSowing < 0 && cropObject?.Kc?.inicial) {
     kcDefault = cropObject.Kc.inicial;
   }
-  
+
   return {
     cropValue: cropValue || undefined,
     daysSinceSowing,
@@ -297,20 +321,30 @@ export function getPhenologicalStage(
 
     // Si la fecha objetivo es anterior a la siembra
     if (daysSinceSow < 0) {
-      return getDefaultResult(selectedCropObject.value, sowDate, daysSinceSow, selectedCropObject);
+      return getDefaultResult(
+        selectedCropObject.value,
+        sowDate,
+        daysSinceSow,
+        selectedCropObject
+      );
     }
 
     // Obtener duraciones de etapas
     const durations = getStageDurations(selectedCropObject.value);
-    const { inicial: Lini, desarrollo: Ldev, media: Lmid, final: Lfin } = durations;
+    const {
+      inicial: Lini,
+      desarrollo: Ldev,
+      media: Lmid,
+      final: Lfin,
+    } = durations;
 
     // Calcular límites de etapas
     const bounds = calculateStageBounds(Lini, Ldev, Lmid, Lfin ?? null);
 
     // Determinar etapa actual
     const stageInfo = determineCurrentStage(
-      daysSinceSow, 
-      bounds, 
+      daysSinceSow,
+      bounds,
       selectedCropObject,
       { Lini, Ldev, Lmid, Lfin: Lfin ?? null }
     );
@@ -319,7 +353,10 @@ export function getPhenologicalStage(
     const stageStartDates = calculateStageStartDates(sowDate, bounds);
 
     // Calcular duración total
-    const totalDuration = Lfin !== null && Lfin !== undefined ? Lini + Ldev + Lmid + Lfin : Lini + Ldev + Lmid;
+    const totalDuration =
+      Lfin !== null && Lfin !== undefined
+        ? Lini + Ldev + Lmid + Lfin
+        : Lini + Ldev + Lmid;
 
     return {
       cropValue: selectedCropObject.value,
@@ -336,9 +373,13 @@ export function getPhenologicalStage(
       stageStartDates,
       kcActual: Math.round((stageInfo.kcActual + Number.EPSILON) * 100) / 100,
     };
-
   } catch (error) {
     console.error("Error al calcular etapa fenológica:", error);
-    return getDefaultResult(selectedCropObject?.value, undefined, 0, selectedCropObject);
+    return getDefaultResult(
+      selectedCropObject?.value,
+      undefined,
+      0,
+      selectedCropObject
+    );
   }
 }

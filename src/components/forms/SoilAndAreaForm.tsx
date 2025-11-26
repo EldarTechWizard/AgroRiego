@@ -51,17 +51,17 @@ export default function SoilAndAreaForm({
         const value = e.target.value
         setAreaInput(value)
 
-        if (value !== "") {
+        if (value === "") {
+            setArea(0)
+        } else {
             const numeric = Number(value)
-            if (!isNaN(numeric)) {
+            if (!Number.isNaN(numeric)) {
                 if (areaUnit === "hectareas") {
                     setArea(numeric * 10000)
                 } else {
                     setArea(numeric)
                 }
             }
-        } else {
-            setArea(0)
         }
     }
 

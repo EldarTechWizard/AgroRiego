@@ -15,6 +15,12 @@ export interface CropP {
   max: number;
 }
 
+
+export interface Location {
+   latitude: number;
+    longitude: number;
+}
+
 export interface Crop {
   name: string;
   value: string;
@@ -34,6 +40,34 @@ export interface SoilType {
   PMP: number; // Punto de Marchitez Permanente (%)
   Da: number;  // Densidad Aparente (g/cm³)
 }
+
+export interface CalculatedResults {
+  id: string;
+  rootDepth: number;
+  waterFactor: number;
+  netSheet: number;
+  dailyVolume: number;
+  irrigationFrequency: number;
+  nextIrrigation: string;
+  cropStage: string;
+  currentKc: number;
+  calculatedAt: Date;
+  eto: number;
+}
+
+export type Parcel = {
+  id: string;
+  userId: string;
+  name: string;
+  area: number;
+  sowingDate: Date;
+  crop: Crop;
+  soilType: SoilType;
+  createdAt: Date;
+  location: Location;
+  calculations: CalculatedResults[];
+};
+
 
 
 export interface FormData {
@@ -71,17 +105,8 @@ export interface FarmStore {
   getCompletionPercentage: () => number;
 }
 
-export type StageName = "Inicial" | "Desarrollo" | "Media" | "Final" | "Post-cosecha" | "No sembrado" | "Perenne" | "Pre-siembra";
 
-export type PhenologyResult = {
-  cropValue?: string;
-  daysSinceSowing: number;
-  stage: StageName;
-  dayOfStage: number;
-  stageLengths: { inicial: number; desarrollo: number; media: number; final?: number | null; total?: number | null };
-  stageStartDates: { inicial: Date; desarrollo: Date; media: Date; final?: Date | null; end?: Date | null };
-  kcActual: number; // Kc estimado actual (interpolado)
-};
+
 
 // === TIPOS HELPER ===
 export type CropValue = Crop['value'];
