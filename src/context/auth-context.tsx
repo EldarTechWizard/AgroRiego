@@ -140,7 +140,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
       password,
       options: {
         data: { name },
-        emailRedirectTo: `${globalThis.location.origin}/auth/callback`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
       },
     })
 
