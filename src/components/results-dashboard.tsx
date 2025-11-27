@@ -12,31 +12,59 @@ import {
   Sprout,
   Gauge,
   Home,
+  Save,
 } from "lucide-react"
-
-interface ResultsData {
-  cultivo: string
-  fechaSiembra: string
-  tipoSuelo: string
-  area: string
-  areaUnit: string
-  laminaNeta: number
-  volumenDiario: number
-  frecuenciaRiego: number
-  proximoRiego: string
-  etapaCultivo: string
-  kcActual: number
-  eto: number
-}
-
-interface ResultsDashboardProps {
-  data: ResultsData
-}
+import { IrrigationResults } from "@/lib/calculations/types"
+import { useAuth } from "@/context/auth-context"
+import { useRouter } from "next/navigation"
+import { useParcels } from "@/hooks/use-parcels"
+import { crops, soilTypes } from "@/constants/"
+import { ChangeEvent, useState } from "react"
+import { Location } from "@/types/farm"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog"
+import { Label } from "./ui/label"
+import { Input } from "./ui/input"
+import { useCalculations } from "@/hooks/use-calculations"
+import { useFarmData } from "@/stores/farmStore"
 
 
+export function ResultsDashboard(data: Readonly<IrrigationResults>) {
+  const { profile } = useAuth()
+  const router = useRouter()
+  const {
 
-export function ResultsDashboard({ data }: Readonly<ResultsDashboardProps>) {
-  // Datos simulados para los próximos 7 días
+    waterFactor,
+    depthRoots,
+
+  } = useFarmData()
+  const { createParcel } = useParcels()
+  const [open, setOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [location, setLocation] = useState<Location>({ latitude: 0, longitude: 0 })
+  const [name, setName] = useState<string>("")
+  const { createCalculation } = useCalculations()
+  const [locationInput, setLocationInput] = useState<Record<keyof Location, string>>({ latitude: "", longitude: "" })
+
+  const onChangeLocationData = (field: keyof Location) => (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Actualiza el input visible
+    setLocationInput(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    // Convierte a número o 0 si está vacío
+    const numeric = value === "" ? 0 : Number(value);
+    if (!Number.isNaN(numeric)) {
+      setLocation(prev => ({
+        ...prev,
+        [field]: numeric,
+      }));
+    }
+  };
+
+
   const parseProx = (fechaReferencia: string) => {
     return new Date(fechaReferencia).toLocaleDateString("es-MX", {
       day: "numeric",
@@ -46,13 +74,63 @@ export function ResultsDashboard({ data }: Readonly<ResultsDashboardProps>) {
 
   const handleNewCalculation = () => {
     console.log("[v0] Iniciando nuevo cálculo")
-    globalThis.location.href = "/"
+    router.push("/")
   }
 
-  const handleExportPDF = () => {
-    console.log("[v0] Exportando PDF")
-    // Lógica para exportar PDF
+  const handleAddParcelLogged = async () => {
+    console.log("[v0] Guardando nueva parcela")
+
+    try {
+      setIsLoading(true);
+
+      const crop = crops.find((c) => c.value === data.cultivo.toLocaleLowerCase());
+      const soil = soilTypes.find((s) => s.value === data.tipoSuelo.toLocaleLowerCase());
+
+      if (!crop) throw new Error("Cultivo inválido");
+      if (!soil) throw new Error("Tipo de suelo inválido");
+
+      const sowingDate = new Date(data.fechaSiembra);
+      if (Number.isNaN(sowingDate.getTime())) throw new Error("Fecha inválida");
+
+      const parcel = await createParcel(name, {
+        area: Number(data.area),
+        sowingDate,
+        crop,
+        soilType: soil,
+        location: location ?? null, // asegúrate que sea serializable
+      });
+
+
+
+      await createCalculation(parcel.id, {
+        netSheet: data.laminaDeRiego,
+        dailyVolume: data.volumenDiario,
+        irrigationFrequency: data.frecuenciaRiego,
+        nextIrrigation: data.proximoRiego,
+        cropStage: data.phenology.stage,
+        currentKc: data.kcActual,
+        eto: data.eto,
+        waterFactor: waterFactor,
+        rootDepth: depthRoots
+      })
+
+      setOpen(false);
+      router.push("/myparcels");
+    } catch (err) {
+      console.error("❌ Error al guardar parcela:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  const handleAddParcelNoLogged = () => {
+    console.log("[v0] Rediriegiendo a login")
+    router.push("/login")
   }
+
+
+
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
@@ -220,7 +298,93 @@ export function ResultsDashboard({ data }: Readonly<ResultsDashboardProps>) {
             Nuevo Cálculo
           </Button>
 
+          <Button
+            onClick={() => (profile ? setOpen(true) : handleAddParcelNoLogged())}
+            size="lg"
+            className="flex items-center gap-2 min-w-48 bg-primary hover:bg-primary/90"
+          >
+            <Save className="h-5 w-5" />
+            Guardar Parcela
+          </Button>
+
         </div>
+
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Save className="h-5 w-5" />
+                Guardar Parcela
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nombre de la Parcela</Label>
+                <Input
+                  id="name"
+                  placeholder="Ej: Parcela Norte"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="latitude">Latitud</Label>
+                  <Input
+                    id="latitude"
+                    type="number"
+                    placeholder="-90 a 90"
+                    value={locationInput.latitude}
+                    onChange={onChangeLocationData("latitude")}
+                    disabled={isLoading}
+                    step="0.0001"
+                    min="-90"
+                    max="90"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="longitude">Longitud</Label>
+                  <Input
+                    id="longitude"
+                    type="number"
+                    placeholder="-180 a 180"
+                    value={locationInput.longitude}
+                    onChange={onChangeLocationData("longitude")}
+                    disabled={isLoading}
+                    step="0.0001"
+                    min="-180"
+                    max="180"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-muted p-3 rounded-lg text-sm text-muted-foreground">
+                <p className="font-semibold mb-2">Información que se guardará:</p>
+                <ul className="space-y-1">
+                  <li>• Cultivo: {data.cultivo}</li>
+                  <li>• Tipo de suelo: {data.tipoSuelo}</li>
+                  <li>
+                    • Área: {data.area} {data.areaUnit}
+                  </li>
+                  <li>• Fecha de siembra: {data.fechaSiembra}</li>
+                </ul>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
+                Cancelar
+              </Button>
+              <Button onClick={handleAddParcelLogged} disabled={isLoading} className="bg-primary hover:bg-primary/90">
+                {isLoading ? "Guardando..." : "Guardar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

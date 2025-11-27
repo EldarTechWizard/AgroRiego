@@ -24,7 +24,7 @@ import { Parcel } from "@/types/farm"
 export default function ProfilePage() {
   const { profile, loading } = useAuth();
   const router = useRouter()
-  const { parcels, isLoading, createParcel } = useParcels()
+  const { parcels, createParcel } = useParcels()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [formData, setFormData] = useState<Omit<Parcel, 'id' | 'userId' | 'createdAt' | 'calculations'>>({

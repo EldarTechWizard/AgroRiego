@@ -140,7 +140,6 @@ export const useFarmStore = create<FarmStore>()(
     {
       name: "farm-storage",
       partialize: (state) => ({ formData: state.formData }),
-      skipHydration: true,
     }
   )
 );

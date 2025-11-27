@@ -1,5 +1,3 @@
-import { Crop, SoilType } from "@/types/farm";
-
 import { getPhenologicalStage } from "@/lib/calculations/services/phenology-calculator.service";
 import { IrrigationInputs, IrrigationResults } from "../types";
 

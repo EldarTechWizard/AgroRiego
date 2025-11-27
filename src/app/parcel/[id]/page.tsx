@@ -23,7 +23,6 @@ export default function ParcelDetailPage() {
   const {
     calculations,
     latestCalculation,
-    isLoading: isLoadingCalculations,
     loadCalculations
   } = useCalculations(parcelId)
 
@@ -146,12 +145,7 @@ export default function ParcelDetailPage() {
               <p className="text-lg text-muted-foreground mt-2">{parcel.crop.name || "Configuración pendiente"}</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" asChild className="gap-2 bg-transparent">
-                <Link href={`/step2?parcelId=${parcel.id}`}>
-                  <Settings className="h-4 w-4" />
-                  Configurar
-                </Link>
-              </Button>
+
               <Button className="gap-2" onClick={() => setOpenNewCalculationDialog(true)}>
 
                 <Plus className="h-4 w-4" />
@@ -250,7 +244,11 @@ export default function ParcelDetailPage() {
               <CardTitle>Historial de Cálculos</CardTitle>
               <CardDescription>
                 {calculations.length > 0
-                  ? `${calculations.length} cálculo${calculations.length === 1 ? "" : "s"} registrado${calculations.length !== 1 ? "s" : ""}`
+                  ? (() => {
+                    const pluralCulculo = calculations.length === 1 ? "" : "s"
+                    const pluralRegistrado = calculations.length === 1 ? "" : "s"
+                    return `${calculations.length} cálculo${pluralCulculo} registrado${pluralRegistrado}`
+                  })()
                   : "No hay cálculos registrados"}
               </CardDescription>
             </CardHeader>

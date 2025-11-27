@@ -18,14 +18,12 @@ type Location = {
 }
 
 type Props = {
-    readonly et0: number
     readonly setEt0: (value: number) => void
     readonly handleBack: () => void
     readonly handleSubmit: (e: React.FormEvent) => void
 }
 
 export default function WeatherForm({
-    et0,
     setEt0,
     handleBack,
     handleSubmit,
@@ -61,6 +59,13 @@ export default function WeatherForm({
         eto: "",
     })
 
+    const getApiKeyForSource = (): string | false => {
+        if (weatherSource === "visual-crossing") return apiKeys.visualCrossing;
+        if (weatherSource === "weather-api") return apiKeys.weatherAPI;
+        if (weatherSource === "openweathermap") return apiKeys.openWeatherMap;
+        return false;
+    };
+
     const isFormValid = () => {
         if (weatherSource === "manual") {
             return manualDataInput.temperatureMax &&
@@ -70,9 +75,7 @@ export default function WeatherForm({
                 manualDataInput.solarRadiation;
         } else {
             const hasLocation = locationInput.latitude && locationInput.longitude;
-            const hasApiKey = weatherSource === "visual-crossing" ? apiKeys.visualCrossing :
-                weatherSource === "weather-api" ? apiKeys.weatherAPI :
-                    weatherSource === "openweathermap" ? apiKeys.openWeatherMap : false;
+            const hasApiKey = getApiKeyForSource();
 
             return hasLocation && hasApiKey;
         }

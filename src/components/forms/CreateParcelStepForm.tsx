@@ -1,6 +1,6 @@
 "use client"
 
-import { ChangeEvent, useEffect, useState } from "react"
+import { ChangeEvent,  useState } from "react"
 import { Button } from "@/components/ui/button"
 
 import { Input } from "@/components/ui/input"
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Loader2, ChevronRight, ChevronLeft } from "lucide-react"
+import {  Loader2, ChevronRight, ChevronLeft } from "lucide-react"
 import type { Location, Parcel } from "@/types/farm"
 import { crops, soilTypes } from "@/constants/"
 
@@ -99,7 +99,7 @@ export function CreateParcelDialog({ handleCreateParcel, formData, setFormData, 
 
         // Convierte a número o 0 si está vacío
         const numeric = value === "" ? 0 : Number(value);
-        if (!isNaN(numeric)) {
+        if (!Number.isNaN(numeric)) {
             setFormData({
                 ...formData,
                 location: {

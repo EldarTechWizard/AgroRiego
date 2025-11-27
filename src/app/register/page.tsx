@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -15,13 +15,29 @@ import { Droplets, Loader2 } from "lucide-react"
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { signUp, user } = useAuth()
+  const { signUp, loading, profile } = useAuth()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
+
+  useEffect(() => {
+    // Solo redirigir si:
+    // 1. No está cargando el auth
+    // 2. Hay un perfil
+    // 3. No está en proceso de login
+    // 4. No está ya redirigiendo
+    if (!loading && profile && !isLoading && !isRedirecting) {
+      console.log('✅ Usuario ya autenticado, redirigiendo a /profile')
+      setIsRedirecting(true)
+
+      // Usar replace para evitar que vuelvan al login con el botón "atrás"
+      router.replace("/myparcels")
+    }
+  }, [profile, loading, isLoading, isRedirecting, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,6 +76,14 @@ export default function RegisterPage() {
 
 
 
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (

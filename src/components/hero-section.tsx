@@ -1,5 +1,4 @@
 import { Droplets, Sprout, BarChart3 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 
 export function HeroSection() {
   return (

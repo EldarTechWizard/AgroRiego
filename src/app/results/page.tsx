@@ -67,5 +67,5 @@ export default function ResultsPage() {
     )
   }
 
-  return <ResultsDashboard data={results} />
+  return <ResultsDashboard {...results} />
 }

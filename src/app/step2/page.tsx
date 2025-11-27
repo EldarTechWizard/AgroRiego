@@ -57,7 +57,6 @@ export default function Step2Page() {
 
           {currentStep === 2 && (
             <WeatherForm
-              et0={Et0}
               setEt0={setEt0}
               handleBack={() => setCurrentStep(1)}
               handleSubmit={handleSubmit}
