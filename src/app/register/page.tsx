@@ -25,11 +25,6 @@ export default function RegisterPage() {
   const [isRedirecting, setIsRedirecting] = useState(false)
 
   useEffect(() => {
-    // Solo redirigir si:
-    // 1. No está cargando el auth
-    // 2. Hay un perfil
-    // 3. No está en proceso de login
-    // 4. No está ya redirigiendo
     if (!loading && profile && !isLoading && !isRedirecting) {
       console.log('✅ Usuario ya autenticado, redirigiendo a /profile')
       setIsRedirecting(true)

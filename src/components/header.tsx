@@ -22,6 +22,7 @@ export function Header() {
   const handleLogout = async () => {
     try {
       await signOut()
+      router.push('/')
       router.refresh()
     } catch (error) {
       console.error("Error al cerrar sesión:", error)

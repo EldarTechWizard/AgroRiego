@@ -1,8 +1,9 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useCallback, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface Profile {
   id: string
@@ -30,8 +31,9 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [supabase] = useState(() => createClient())
+  const router = useRouter()
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -43,87 +45,71 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
         console.error('Error fetching profile:', error)
         return null
       }
-      
       return data
     } catch (error) {
       console.error('Exception fetching profile:', error)
       return null
     }
-  }
+  }, [supabase])
 
   useEffect(() => {
     let mounted = true
 
-    const initialize = async () => {
+    // Función unificada para manejar la sesión y el perfil
+    const handleSession = async (currentSession: Session | null) => {
       try {
-        console.log('🔄 Starting auth initialization...')
-        
-        // Obtener sesión actual
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession()
-        
-        if (sessionError) {
-          console.error('❌ Session error:', sessionError)
-          if (mounted) {
-            setSession(null)
-            setUser(null)
-            setProfile(null)
-            setLoading(false)
-          }
-          return
-        }
+        if (!mounted) return
 
-        console.log('Session status:', currentSession ? '✅ Active' : '❌ None')
-
-        if (mounted) {
+        if (currentSession?.user) {
+          // 1. Tenemos sesión, actualizamos estado básico
           setSession(currentSession)
-          setUser(currentSession?.user ?? null)
+          setUser(currentSession.user)
 
-          if (currentSession?.user) {
-            const profileData = await fetchProfile(currentSession.user.id)
-            if (mounted) {
-              setProfile(profileData)
-            }
-          } else {
-            setProfile(null)
+          // 2. Buscamos el perfil solo si el usuario cambió o no tenemos perfil
+          // Esto evita llamadas innecesarias
+          const profileData = await fetchProfile(currentSession.user.id)
+
+          if (mounted) {
+            setProfile(profileData)
           }
-
-          setLoading(false)
-          console.log('✅ Auth initialization complete')
-        }
-      } catch (error) {
-        console.error('❌ Fatal error in auth initialization:', error)
-        if (mounted) {
+        } else {
+          // 3. NO hay sesión: Limpieza TOTAL
           setSession(null)
           setUser(null)
           setProfile(null)
+        }
+      } catch (error) {
+        console.error('Error handling session:', error)
+      } finally {
+        // 4. SIEMPRE apagamos el loading al final, pase lo que pase
+        if (mounted) {
           setLoading(false)
         }
       }
     }
 
-    initialize()
+    // A. Chequeo inicial (GetSession)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleSession(session)
+    })
 
-    // Listener para cambios de auth
+    // B. Listener de eventos (Sign In, Sign Out, Token Refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log('🔔 Auth event:', event)
+      (_event, session) => {
+        // Reiniciamos loading a true solo si es un evento de cambio mayor
+        if (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED') {
+          // Opcional: setLoading(true) si quieres mostrar spinner mientras cargas perfil
+        }
 
-        if (mounted) {
-          setSession(currentSession)
-          setUser(currentSession?.user ?? null)
-
-          if (currentSession?.user) {
-            const profileData = await fetchProfile(currentSession.user.id)
-            if (mounted) {
-              setProfile(profileData)
-            }
-          } else {
-            setProfile(null)
-          }
-
-          if (loading) {
-            setLoading(false)
-          }
+        if (_event === 'SIGNED_OUT') {
+          // Limpieza explícita e inmediata
+          setSession(null)
+          setUser(null)
+          setProfile(null)
+          setLoading(false)
+          router.refresh() // Forzar limpieza de caché de Next.js
+        } else {
+          handleSession(session)
         }
       }
     )
@@ -132,8 +118,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
       mounted = false
       subscription.unsubscribe()
     }
-  }, [supabase])
-
+  }, [supabase, fetchProfile, router])
   const signUp = async (email: string, password: string, name: string) => {
     const { error } = await supabase.auth.signUp({
       email,
@@ -157,12 +142,13 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-    
     setUser(null)
     setProfile(null)
     setSession(null)
+
+    // Luego decimos a Supabase que cierre
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
   }
 
   const updateProfile = async (name: string) => {
@@ -174,7 +160,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
       .eq('id', user.id)
 
     if (error) throw error
-    
+
     const updatedProfile = await fetchProfile(user.id)
     if (updatedProfile) {
       setProfile(updatedProfile)
