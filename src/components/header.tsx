@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { User, LogOut, Menu,  Leaf } from "lucide-react"
+import { User, LogOut,  Leaf } from "lucide-react"
 
 
 export function Header() {
@@ -86,10 +86,6 @@ export function Header() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="w-5 h-5" />
-          </Button>
         </div>
       </div>
     </header>

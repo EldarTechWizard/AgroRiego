@@ -5,7 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle2, ArrowRight, Home } from "lucide-react"
 import Link from "next/link"
 
+
 export default function EmailConfirmedPage() {
+
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-blue-50 p-4">
       <Card className="w-full max-w-md">
